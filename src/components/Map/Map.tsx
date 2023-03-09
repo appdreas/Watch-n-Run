@@ -3,22 +3,26 @@ import { LatLngExpression } from 'leaflet'
 import { MapContainer, TileLayer, Popup, Marker, useMapEvents } from 'react-leaflet'
 import { useState } from 'react'
 import { ICON } from 'public/Icon'
+import { decode, encode } from "@googlemaps/polyline-codec";
 
-const Map = () => {
-    const position: LatLngExpression = [51.505, -0.09]
+const Map = ({ activity, activities }) => {
+    const position: LatLngExpression = activity.start_latlng
+    //const encoded = decode(activity.map.polyline)
+  
+    const encoded = activities.slice(0,2).flatMap((act) => {
+      return decode(act.map.summary_polyline)
+    })
 
-    function LocationMarker() {
-  const [position, setPosition] = useState(null)
-  const map = useMapEvents({
-    click() {
-      map.locate()
-    },
-    locationfound(e) {
-      setPosition(e.latlng)
-      map.flyTo(e.latlng, map.getZoom())
-    },
-  })
-
+  function LocationMarker({ position }) {
+    //const map = useMapEvents({
+    // click() {
+    //   map.locate()
+    // },
+    // locationfound(e) {
+    //   setPosition(e.latlng)
+    //   map.flyTo(e.latlng, map.getZoom())
+    // },
+  //})
   return position === null ? null : (
     <Marker icon={ICON} position={position}>
       <Popup>You are here</Popup>
@@ -26,14 +30,13 @@ const Map = () => {
   )
 }
 
-
   return (
-    <MapContainer className='w-full h-full' center={position} zoom={13} scrollWheelZoom={true}>
+    <MapContainer className='w-full h-full' center={position} zoom={11} scrollWheelZoom={true}>
         <TileLayer 
              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-         <LocationMarker />
+         {encoded.map((latLng, index) => (<LocationMarker key={index} position={latLng} />)) }
     </MapContainer>
 
   )

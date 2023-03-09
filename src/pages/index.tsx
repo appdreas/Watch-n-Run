@@ -14,16 +14,33 @@ import { gsap } from 'gsap'
 
 export default function Home() {
   const { data: session } = useSession()
+  const [activities, setActivities] = useState([])
+  const [activityExtended, setActivityExtended] = useState(null)
 
-  // const getAthleteStats = async() => {
-  //   const res = await fetch(`https://www.strava.com/api/v3/athlete/activities?access_token=${session.accessToken}`)
-  //   const data = await res.json()
-  // } 
+  const getAthleteActivities = async() => {
+    const res = await fetch(`https://www.strava.com/api/v3/athlete/activities?access_token=${session.accessToken}`)
+    const data = await res.json()
+    setActivities(data)
+  } 
 
   // const getAthleteRoutes = async() => { 
   //   const res = await fetch(`https://www.strava.com/api/v3/athletes/${session.athleteId}/routes?access_token=${session.accessToken}`)
   //   const data = await res.json()
   // }
+
+  const getActivity = async(id) => {
+    const res = await fetch(`https://www.strava.com/api/v3/activities/${id}?access_token=${session.accessToken}`)
+    const data = await res.json()
+    setActivityExtended(data)
+  } 
+
+  useEffect(() => {
+    if(!!session?.accessToken){
+      getAthleteActivities()
+    }
+  }, [session])
+
+
   return (
     <>
       <Head>
@@ -70,7 +87,11 @@ export default function Home() {
           <div  className="hero min-h-screen bg-base-200">
               {session ? (
                   <div className="hero-content w-full h-4/5">
-                    <Map />
+                    {!activityExtended ?
+                      <div className="btn btn-primary" onClick={() => getActivity(activities[0].id)}>{`Let's go`}</div>
+                      :
+                      <Map activity={activityExtended} activities={activities} />
+                    }
                   </div>
               ) : (
                 <div className="hero-content text-center">
